@@ -39,11 +39,11 @@ blueprint:
     maximum_meals:
       name: Maximum Meals
       description: The maximum number of meals you want to feed in a day.
+      default: 10
       selector:
         number:
           min: 2
-          max: 50
-          initial: 10
+          max: 50          
 
 trigger:
   platform: state
