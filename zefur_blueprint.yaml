@@ -25,10 +25,11 @@ blueprint:
       name: Base Food
       description: The amount of food to feed a hypothetical 0-weight pet. This value is used along with the 'Food per Pound' value to calculate how much food the pet should receive each day.
       selector:
-        min: 0.0
-        max: 50.0
-        step: .01
-        unit_of_measurement: 'g'
+        number:
+          min: 0.0
+          max: 50.0
+          step: .01
+          unit_of_measurement: 'g'
     serving_size:
       name: Serving Size
       description: Enter the size of one serving of food in grams.
