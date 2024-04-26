@@ -36,6 +36,14 @@ blueprint:
           max: 100.0
           step: .05
           unit_of_measurement: "g"
+    maximum_meals:
+      name: Maximum Meals
+      description: The maximum number of meals you want to feed in a day.
+      selector:
+        number:
+          min: 2
+          max: 50
+          initial: 10
 
 trigger:
   platform: state
@@ -50,8 +58,26 @@ action:
       total_food: "{{ (weight * food_per_lb + base_food) | round(2) }}"
       total_portions: "{{ (total_food / serving) | round(0) }}"
       portions_per_meal: "{{ (total_food / meals_per_day) | round(2) }}"
+      optimal_meals: 1
       meals_per_day: >-
         {% set possible_meals = range(1, 10) | map('int') %}
         {% set meal_ratios = possible_meals | map(attribute='__div__', other=total_portions) %}
         {% set closest_meal = meal_ratios | min %}
         {{ closest_meal }}
+  - repeat:
+      while:
+        - "{{ current_meals <= maximum_meals }}"
+      sequence:
+        - variables:
+            portions_per_meal: "{{ (total_food / current_meals) | round(2) }}"
+            remainder: "{{ total_portions % current_meals }}"
+        - choose:
+            - conditions: "{{ remainder < smallest_remainder }}"
+              sequence:
+                - variables:
+                    smallest_remainder: "{{ remainder }}"
+                    optimal_meals: "{{ current_meals }}"
+        - variables:
+            current_meals: "{{ current_meals + 1 }}"
+      until:
+        - "{{ current_meals > maximum_meals }}"
