@@ -18,6 +18,8 @@ blueprint:
         number:
           min: 1
           max: 100
+          step: .05
+          mode: slider
           unit_of_measurement: 'g'
     serving_size:
       name: Serving Size
