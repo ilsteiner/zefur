@@ -1,0 +1,78 @@
+blueprint:
+  name: Zero Effort Feeding Utility and Regulator (ZEFUR)
+  description: Calculates daily feeding requirements based on pet weight, divides this into optimal portions based on serving size, and determines the best number of meals to closely match these portions.
+  domain: automation
+  input:
+    pet_weight:
+      name: Pet Weight
+      description: Enter the weight of your pet in pounds.
+      selector:
+        number:
+          min: 1
+          max: 200
+          unit_of_measurement: 'lbs'
+    food_per_pound:
+      name: Food per Pound
+      description: Enter the amount of food in grams per pound of pet weight.
+      selector:
+        number:
+          min: 1
+          max: 100
+          unit_of_measurement: 'g'
+    serving_size:
+      name: Serving Size
+      description: Enter the size of one serving of food in grams.
+      selector:
+        number:
+          min: 1
+          max: 100
+          unit_of_measurement: 'g'
+    feeding_amount_variable:
+      name: Feeding Amount Output Entity
+      description: Entity ID of the input_number where the calculated daily feeding amount in grams will be stored.
+      selector:
+        entity:
+          domain: input_number
+    meals_per_day_variable:
+      name: Meals per Day Output Entity
+      description: Entity ID of the input_number where the calculated optimal number of meals per day will be stored.
+      selector:
+        entity:
+          domain: input_number
+
+trigger:
+  platform: state
+  entity_id: input_number.pet_weight
+
+action:
+  - variables:
+      weight: "{{ states('input_number.pet_weight') | float }}"
+      food_per_lb: "{{ states('input_number.food_per_pound') | float }}"
+      serving: "{{ states('input_number.serving_size') | float }}"
+      total_food: "{{ (weight * food_per_lb) | round(2) }}"
+      total_portions: "{{ (total_food / serving) | round(0) }}"
+  - service: input_number.set_value
+    target:
+      entity_id: !input feeding_amount_variable
+    data:
+      value: "{{ total_food }}"
+  - choose:
+      - conditions: "{{ total_portions % 1 == 0 }}"
+        sequence:
+          - service: input_number.set_value
+            target:
+              entity_id: !input meals_per_day_variable
+            data:
+              value: "{{ total_portions }}"
+    default:
+      - variables:
+          meals: >-
+            {% set closest = range(1, 10) | map('string') | map('int') | list %}
+            {% set closest = closest | sort(key=lambda x: abs((total_portions / x) | round(0) * x - total_portions)) %}
+            {% set best_fit = closest[0] %}
+            {{ best_fit }}
+      - service: input_number.set_value
+        target:
+          entity_id: !input meals_per_day_variable
+        data:
+          value: "{{ meals }}"
