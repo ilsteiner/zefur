@@ -27,9 +27,9 @@ blueprint:
           max: 50.0
           step: .01
           unit_of_measurement: "g"
-    serving_size:
-      name: Serving Size
-      description: Enter the size of one serving of food in grams.
+    portion_size:
+      name: Portion Size
+      description: Enter the size of one portion of food in grams. This is the amount dispensed from the feeder when pressing the manual button once.
       selector:
         number:
           min: 1.0
@@ -43,7 +43,13 @@ blueprint:
       selector:
         number:
           min: 2
-          max: 50          
+          max: 50
+    on_schedule_change:
+      name: On Schedule Change
+      description: The script to run when the schedule changes. This script should accept a JSON object representing the schedule and set the schedule appropriately.
+      selector:
+        entity:
+          domain: script
 
 trigger:
   platform: state
@@ -51,12 +57,12 @@ trigger:
 
 action:
   - variables:
-      weight: "{{ states('input_number.pet_weight') | float }}"
+      pet_weight: "{{ states('input_number.pet_weight') | float }}"
       food_per_lb: "{{ states('input_number.food_per_pound') | float }}"
       base_food: "{{ states('input_number.base_food') | float }}"
-      serving: "{{ states('input_number.serving_size') | float }}"
-      total_food: "{{ (weight * food_per_lb + base_food) | round(2) }}"
-      total_portions: "{{ (total_food / serving) | round(0) }}"
+      portion_size: "{{ states('input_number.portion_size') | float }}"
+      total_food: "{{ (pet_weight * food_per_lb + base_food) | round(2) }}"
+      total_portions: "{{ (total_food / portion_size) | round(0) }}"
       portions_per_meal: "{{ (total_food / meals_per_day) | round(2) }}"
       optimal_meals: 1
       meals_per_day: >-
@@ -64,6 +70,11 @@ action:
         {% set meal_ratios = possible_meals | map(attribute='__div__', other=total_portions) %}
         {% set closest_meal = meal_ratios | min %}
         {{ closest_meal }}
+      # Calculate the time gap between meals
+      time_gap_minutes: "{{ 24 * 60 // meals_per_day }}"
+      current_time_minutes: 0
+      current_meal: 1
+      feeder_schedule: []
   - repeat:
       sequence:
         - variables:
@@ -73,7 +84,6 @@ action:
         - repeat:
             sequence:
               - variables:
-                  portions_per_meal: "{{ (total_food / current_meals) | round(2) }}"
                   remainder: "{{ total_portions % current_meals }}"
               - choose:
                   - conditions: "{{ remainder < smallest_remainder }}"
@@ -87,3 +97,19 @@ action:
               - "{{ current_meals > states('input_number.maximum_meals') | int }}"
       until:
         - "{{ current_meals > states('input_number.maximum_meals') | int }}"
+  - repeat:
+      while:
+        - "{{ current_meal <= meals_per_day }}"
+      sequence:
+        - variables:
+            current_hour: "{{ current_time_minutes // 60 }}"
+            current_minute: "{{ ((current_time_minutes % 60) // 15) * 15 }}"
+            schedule_entry:
+              days: "everyday"
+              hour: "{{ current_hour }}"
+              minute: "{{ current_minute }}"
+              size: "{{ portion_size }}"
+        - variables:
+            feeder_schedule: "{{ feeder_schedule + [schedule_entry] }}"
+            current_time_minutes: "{{ current_time_minutes + time_gap_minutes }}"
+            current_meal: "{{ current_meal + 1 }}"
