@@ -64,28 +64,9 @@ action:
       serving: "{{ states('input_number.serving_size') | float }}"
       total_food: "{{ (weight * food_per_lb + base_food) | round(2) }}"
       total_portions: "{{ (total_food / serving) | round(0) }}"
-  - service: input_number.set_value
-    target:
-      entity_id: !input feeding_amount_variable
-    data:
-      value: "{{ total_food }}"
-  - choose:
-      - conditions: "{{ total_portions % 1 == 0 }}"
-        sequence:
-          - service: input_number.set_value
-            target:
-              entity_id: !input meals_per_day_variable
-            data:
-              value: "{{ total_portions }}"
-    default:
-      - variables:
-          meals: >-
+      portions_per_meal: "{{ (total_food / meals_per_day) | round(2) }}"
+      meals_per_day: >-
             {% set closest = range(1, 10) | map('string') | map('int') | list %}
             {% set closest = closest | sort(key=lambda x: abs((total_portions / x) | round(0) * x - total_portions)) %}
             {% set best_fit = closest[0] %}
             {{ best_fit }}
-      - service: input_number.set_value
-        target:
-          entity_id: !input meals_per_day_variable
-        data:
-          value: "{{ meals }}"
