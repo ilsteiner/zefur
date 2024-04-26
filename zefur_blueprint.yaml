@@ -52,6 +52,6 @@ action:
       portions_per_meal: "{{ (total_food / meals_per_day) | round(2) }}"
       meals_per_day: >-
         {% set possible_meals = range(1, 10) | map('int') %}
-        {% set meal_ratios = possible_meals | map(attribute='__div__') %}
-        {% set closest_meal = meal_ratios | min(key=lambda ratio: abs(total_portions - (ratio * total_portions))) %}
+        {% set meal_ratios = possible_meals | map(attribute='__div__', other=total_portions) %}
+        {% set closest_meal = meal_ratios | min %}
         {{ closest_meal }}
