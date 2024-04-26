@@ -11,6 +11,7 @@ blueprint:
           min: 1.0
           max: 200.0
           step: .05
+          mode: box
           unit_of_measurement: 'lbs'
     food_per_pound:
       name: Food per Pound
@@ -20,7 +21,7 @@ blueprint:
           min: 1.0
           max: 100.0
           step: .01
-          mode: slider
+          mode: box
           unit_of_measurement: 'g'
     base_food:
       name: Base Food
