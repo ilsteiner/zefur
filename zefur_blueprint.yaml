@@ -19,9 +19,18 @@ blueprint:
         number:
           min: 1.0
           max: 100.0
-          step: .05
+          step: .01
           mode: slider
           unit_of_measurement: 'g'
+    base_food:
+      name: Base Food
+      description: The amount of food to feed a hypothetical 0-weight pet. This value is used along with the 'Food per Pound' value to calculate how much food the pet should receive each day.
+      selector:
+        min: 0.0
+        max: 50.0
+        step: .01
+        mode: box
+        unit_of_measurement: 'g'
     serving_size:
       name: Serving Size
       description: Enter the size of one serving of food in grams.
@@ -53,8 +62,9 @@ action:
   - variables:
       weight: "{{ states('input_number.pet_weight') | float }}"
       food_per_lb: "{{ states('input_number.food_per_pound') | float }}"
+      base_food: "{{ states('input_number.base_food') | float }}"
       serving: "{{ states('input_number.serving_size') | float }}"
-      total_food: "{{ (weight * food_per_lb) | round(2) }}"
+      total_food: "{{ (weight * food_per_lb + base_food) | round(2) }}"
       total_portions: "{{ (total_food / serving) | round(0) }}"
   - service: input_number.set_value
     target:
