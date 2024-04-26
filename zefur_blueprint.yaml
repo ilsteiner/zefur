@@ -44,6 +44,12 @@ blueprint:
         number:
           min: 2
           max: 50
+    first_meal_time:
+      name: First Meal Time
+      description: Select the time for the first meal of the day.
+      selector:
+        time:
+          default: "02:00"
     on_schedule_change:
       name: On Schedule Change
       description: The script to run when the schedule changes. This script should accept a JSON object representing the schedule and set the schedule appropriately.
@@ -72,7 +78,7 @@ action:
         {{ closest_meal }}
       # Calculate the time gap between meals
       time_gap_minutes: "{{ 24 * 60 // meals_per_day }}"
-      current_time_minutes: 0
+      current_time_minutes: "{{ (states('input_datetime.first_meal_time') | as_timestamp) // 60 }}"
       current_meal: 1
       feeder_schedule: []
   - repeat:
