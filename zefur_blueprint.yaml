@@ -8,8 +8,9 @@ blueprint:
       description: Enter the weight of your pet in pounds.
       selector:
         number:
-          min: 1
-          max: 200
+          min: 1.0
+          max: 200.0
+          step: .05
           unit_of_measurement: 'lbs'
     food_per_pound:
       name: Food per Pound
@@ -26,8 +27,10 @@ blueprint:
       description: Enter the size of one serving of food in grams.
       selector:
         number:
-          min: 1
-          max: 100
+          min: 1.0
+          max: 100.0
+          step: .05
+          mode: slider
           unit_of_measurement: 'g'
     feeding_amount_variable:
       name: Feeding Amount Output Entity
