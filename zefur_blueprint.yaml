@@ -39,18 +39,6 @@ blueprint:
           max: 100.0
           step: .05
           unit_of_measurement: 'g'
-    feeding_amount_variable:
-      name: Feeding Amount Output Entity
-      description: Entity ID of the input_number where the calculated daily feeding amount in grams will be stored.
-      selector:
-        entity:
-          domain: input_number
-    meals_per_day_variable:
-      name: Meals per Day Output Entity
-      description: Entity ID of the input_number where the calculated optimal number of meals per day will be stored.
-      selector:
-        entity:
-          domain: input_number
 
 trigger:
   platform: state
