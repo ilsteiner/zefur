@@ -11,7 +11,6 @@ blueprint:
           min: 1.0
           max: 200.0
           step: .05
-          mode: box
           unit_of_measurement: 'lbs'
     food_per_pound:
       name: Food per Pound
@@ -21,7 +20,6 @@ blueprint:
           min: 1.0
           max: 100.0
           step: .01
-          mode: box
           unit_of_measurement: 'g'
     base_food:
       name: Base Food
@@ -30,7 +28,6 @@ blueprint:
         min: 0.0
         max: 50.0
         step: .01
-        mode: box
         unit_of_measurement: 'g'
     serving_size:
       name: Serving Size
@@ -40,7 +37,6 @@ blueprint:
           min: 1.0
           max: 100.0
           step: .05
-          mode: slider
           unit_of_measurement: 'g'
     feeding_amount_variable:
       name: Feeding Amount Output Entity
