@@ -65,19 +65,25 @@ action:
         {% set closest_meal = meal_ratios | min %}
         {{ closest_meal }}
   - repeat:
-      while:
-        - "{{ current_meals <= maximum_meals }}"
       sequence:
         - variables:
-            portions_per_meal: "{{ (total_food / current_meals) | round(2) }}"
-            remainder: "{{ total_portions % current_meals }}"
-        - choose:
-            - conditions: "{{ remainder < smallest_remainder }}"
-              sequence:
-                - variables:
-                    smallest_remainder: "{{ remainder }}"
-                    optimal_meals: "{{ current_meals }}"
-        - variables:
-            current_meals: "{{ current_meals + 1 }}"
+            current_meals: 1
+            optimal_meals: 1
+            smallest_remainder: "{{ total_portions }}"
+        - repeat:
+            sequence:
+              - variables:
+                  portions_per_meal: "{{ (total_food / current_meals) | round(2) }}"
+                  remainder: "{{ total_portions % current_meals }}"
+              - choose:
+                  - conditions: "{{ remainder < smallest_remainder }}"
+                    sequence:
+                      - variables:
+                          smallest_remainder: "{{ remainder }}"
+                          optimal_meals: "{{ current_meals }}"
+              - variables:
+                  current_meals: "{{ current_meals + 1 }}"
+            until:
+              - "{{ current_meals > states('input_number.maximum_meals') | int }}"
       until:
-        - "{{ current_meals > maximum_meals }}"
+        - "{{ current_meals > states('input_number.maximum_meals') | int }}"
