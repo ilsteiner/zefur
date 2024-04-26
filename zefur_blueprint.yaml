@@ -47,9 +47,9 @@ blueprint:
     first_meal_time:
       name: First Meal Time
       description: Select the time for the first meal of the day.
+      default: "02:00"
       selector:
-        time:
-          default: "02:00"
+        time:          
     on_schedule_change:
       name: On Schedule Change
       description: The script to run when the schedule changes. This script should accept a JSON object representing the schedule and set the schedule appropriately.
